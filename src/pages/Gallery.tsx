@@ -9,10 +9,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import type { GalleryItem } from '@/lib/firestore-types';
+import { useTranslation } from 'react-i18next';
 
 export default function Gallery() {
   const [images, setImages] = useState<GalleryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const galleryQuery = query(
@@ -58,10 +60,10 @@ export default function Gallery() {
         </div>
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">
-            Photo Gallery
+            {t('gallery.title')}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Memorable moments from matches and training
+            {t('gallery.subtitle')}
           </p>
         </div>
       </div>
@@ -70,7 +72,7 @@ export default function Gallery() {
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">No photos uploaded yet</p>
+            <p className="text-muted-foreground">{t('gallery.noImages')}</p>
           </CardContent>
         </Card>
       ) : (

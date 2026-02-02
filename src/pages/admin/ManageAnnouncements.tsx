@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
 import { uploadToCloudinary } from '@/lib/cloudinary';
@@ -59,6 +60,7 @@ const toDate = (value: unknown): Date => {
 };
 
 export default function ManageAnnouncements() {
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -183,8 +185,8 @@ export default function ManageAnnouncements() {
         console.log('Admin: Announcement updated successfully');
         
         toast({
-          title: 'Announcement Updated',
-          description: 'The announcement has been updated successfully.',
+          title: t('announcements.announcementUpdated'),
+          description: t('announcements.announcementUpdatedDesc'),
         });
       } else {
         const newAnnouncementData = {
@@ -201,8 +203,10 @@ export default function ManageAnnouncements() {
         console.log('Admin: This announcement should', isPublished ? 'appear on News page immediately' : 'be saved as draft');
         
         toast({
-          title: 'Announcement Posted',
-          description: `The announcement has been ${isPublished ? 'published and is now visible to users' : 'saved as draft'}.`,
+          title: t('announcements.announcementPosted'),
+          description: t('announcements.announcementPostedDesc', { 
+            status: isPublished ? t('announcements.publishedAndVisible') : t('announcements.savedAsDraft') 
+          }),
         });
       }
 
@@ -211,8 +215,8 @@ export default function ManageAnnouncements() {
       // Real-time listener will automatically update the list
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to save announcement.',
+        title: t('common.error'),
+        description: error.message || t('announcements.failedToSave'),
         variant: 'destructive',
       });
     } finally {
@@ -236,14 +240,16 @@ export default function ManageAnnouncements() {
       console.log('Admin: Announcement should now', newStatus ? 'appear on News page' : 'be hidden from News page');
 
       toast({
-        title: newStatus ? 'Published' : 'Unpublished',
-        description: `Announcement has been ${newStatus ? 'published and is now visible to users' : 'unpublished and hidden from users'}.`,
+        title: newStatus ? t('announcements.publishedSuccess') : t('announcements.unpublishedSuccess'),
+        description: t('announcements.publishStatusDesc', { 
+          status: newStatus ? t('announcements.publishedAndVisibleDesc') : t('announcements.unpublishedAndHiddenDesc') 
+        }),
       });
 
     } catch (error: any) {
       console.error('Admin: Error toggling publish status:', error);
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -251,20 +257,20 @@ export default function ManageAnnouncements() {
   };
 
   const deleteAnnouncement = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this announcement?')) return;
+    if (!confirm(t('announcements.deleteConfirm'))) return;
 
     try {
       await deleteDoc(doc(db, 'announcements', id));
 
       toast({
-        title: 'Deleted',
-        description: 'Announcement has been deleted.',
+        title: t('common.success'),
+        description: t('messages.itemDeleted'),
       });
 
       // Real-time listener will automatically update the list
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -293,10 +299,10 @@ export default function ManageAnnouncements() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">
-              Announcements
+              {t('admin.announcements')}
             </h1>
             <p className="text-muted-foreground text-sm">
-              {announcements.length} announcements
+              {t('announcements.announcementsCount', { count: announcements.length })}
             </p>
           </div>
         </div>
@@ -308,47 +314,47 @@ export default function ManageAnnouncements() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              New Announcement
+              {t('announcements.newAnnouncement')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0">
             <DialogHeader className="p-6 pb-2">
               <DialogTitle className="font-display">
-                {editingAnnouncement ? 'Edit Announcement' : 'New Announcement'}
+                {editingAnnouncement ? t('announcements.editAnnouncement') : t('announcements.newAnnouncement')}
               </DialogTitle>
               <DialogDescription>
                 {editingAnnouncement
-                  ? 'Update the announcement details'
-                  : 'Create a new announcement for the club'}
+                  ? t('announcements.updateAnnouncementDetails')
+                  : t('announcements.createNewAnnouncement')}
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pt-2 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">{t('announcements.title')} *</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Announcement title"
+                  placeholder={t('announcements.announcementTitle')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="content">Content *</Label>
+                <Label htmlFor="content">{t('announcements.content')} *</Label>
                 <Textarea
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write your announcement..."
+                  placeholder={t('announcements.writeAnnouncement')}
                   rows={5}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Announcement Image</Label>
+                <Label>{t('announcements.announcementImage')}</Label>
                 <div className="flex flex-col gap-4">
                   {imagePreview ? (
                     <div className="relative aspect-video rounded-lg overflow-hidden bg-muted border">
@@ -376,7 +382,7 @@ export default function ManageAnnouncements() {
                         <Upload className="h-6 w-6 text-primary" />
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-medium">Click to upload image</p>
+                        <p className="text-sm font-medium">{t('announcements.clickToUpload')}</p>
                         <p className="text-xs text-muted-foreground">PNG, JPG or WebP</p>
                       </div>
                     </div>
@@ -395,7 +401,7 @@ export default function ManageAnnouncements() {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-background px-2 text-muted-foreground">
-                        Or provide URL
+                        {t('announcements.orProvideUrl')}
                       </span>
                     </div>
                   </div>
@@ -412,7 +418,7 @@ export default function ManageAnnouncements() {
                         setImagePreview(null);
                       }
                     }}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder={t('announcements.imageUrlPlaceholder')}
                   />
                 </div>
               </div>
@@ -423,7 +429,7 @@ export default function ManageAnnouncements() {
                   checked={isPublished}
                   onCheckedChange={setIsPublished}
                 />
-                <Label htmlFor="isPublished">Publish immediately</Label>
+                <Label htmlFor="isPublished">{t('announcements.isPublished')}</Label>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
@@ -435,11 +441,11 @@ export default function ManageAnnouncements() {
                     resetForm();
                   }}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {editingAnnouncement ? 'Save Changes' : 'Post Announcement'}
+                  {editingAnnouncement ? t('announcements.saveChanges') : t('announcements.postAnnouncement')}
                 </Button>
               </div>
             </form>
@@ -453,10 +459,10 @@ export default function ManageAnnouncements() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('announcements.title')}</TableHead>
+                <TableHead>{t('fixtures.matchDate')}</TableHead>
+                <TableHead>{t('matches.status')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -482,7 +488,7 @@ export default function ManageAnnouncements() {
                           : ''
                       }
                     >
-                      {announcement.is_published ? 'Published' : 'Draft'}
+                      {announcement.is_published ? t('announcements.published') : t('announcements.draftStatus')}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -491,7 +497,7 @@ export default function ManageAnnouncements() {
                         variant="ghost"
                         size="icon"
                         onClick={() => togglePublished(announcement)}
-                        title={announcement.is_published ? 'Unpublish' : 'Publish'}
+                        title={announcement.is_published ? t('announcements.unpublish') : t('announcements.publish')}
                       >
                         {announcement.is_published ? (
                           <EyeOff className="h-4 w-4" />
@@ -521,7 +527,7 @@ export default function ManageAnnouncements() {
               {announcements.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                    No announcements yet
+                    {t('announcements.noAnnouncements')}
                   </TableCell>
                 </TableRow>
               )}

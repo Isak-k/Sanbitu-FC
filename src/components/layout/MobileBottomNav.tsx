@@ -47,7 +47,7 @@ export function MobileBottomNav() {
   const { t } = useTranslation();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:hidden mobile-safe-bottom">
       <nav className="flex items-center justify-around px-2 py-2">
         {navigationItems.map((item) => {
           const Icon = item.icon;
@@ -58,7 +58,7 @@ export function MobileBottomNav() {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 min-w-0 flex-1",
+                "flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 min-w-0 min-h-[48px] flex-1",
                 isActive 
                   ? "text-primary bg-primary/10" 
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { 
@@ -75,6 +76,7 @@ const eventTypes: EventType[] = ['goal', 'assist', 'yellow_card', 'red_card'];
 export default function ManageMatchDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading } = useAuth();
   
   const [match, setMatch] = useState<MatchWithDetails | null>(null);
@@ -198,12 +200,12 @@ export default function ManageMatchDetails() {
         created_at: new Date().toISOString(),
       });
 
-      toast({ title: 'Player added to lineup' });
+      toast({ title: t('matches.playerAddedToLineup') });
       setSelectedPlayer('');
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -218,7 +220,7 @@ export default function ManageMatchDetails() {
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -237,13 +239,13 @@ export default function ManageMatchDetails() {
         created_at: new Date().toISOString(),
       });
 
-      toast({ title: 'Event recorded' });
+      toast({ title: t('matches.eventRecorded') });
       setEventPlayer('');
       setEventMinute('');
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -258,7 +260,7 @@ export default function ManageMatchDetails() {
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -285,11 +287,11 @@ export default function ManageMatchDetails() {
         updated_at: new Date().toISOString(),
       });
 
-      toast({ title: 'Match updated successfully' });
+      toast({ title: t('matches.matchUpdatedSuccessfully') });
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -317,7 +319,7 @@ export default function ManageMatchDetails() {
   if (!match) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Match not found</p>
+        <p className="text-muted-foreground">{t('matches.matchNotFound')}</p>
       </div>
     );
   }
@@ -334,11 +336,11 @@ export default function ManageMatchDetails() {
       <div className="flex items-center justify-between print:hidden">
         <Button variant="ghost" onClick={() => navigate('/admin/matches')} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {t('common.back')}
         </Button>
         <Button variant="outline" onClick={printLineup} className="gap-2">
           <Printer className="h-4 w-4" />
-          Print Lineup
+          {t('matches.printLineup')}
         </Button>
       </div>
 
@@ -355,7 +357,7 @@ export default function ManageMatchDetails() {
                 />
               </div>
               <div>
-                <p className="font-display text-xl font-bold">vs {match.opponent}</p>
+                <p className="font-display text-xl font-bold">{t('fixtures.vs')} {match.opponent}</p>
                 <p className="text-muted-foreground">
                   {format(toDate(match.match_date), 'PPP • HH:mm')}
                 </p>
@@ -363,7 +365,7 @@ export default function ManageMatchDetails() {
             </div>
             {match.kit_colors && (
               <div className="flex items-center gap-2 print:block">
-                <span className="text-sm text-muted-foreground">Kit:</span>
+                <span className="text-sm text-muted-foreground">{t('matches.kit')}:</span>
                 <div
                   className="h-8 w-8 rounded-lg border-2"
                   style={{ backgroundColor: match.kit_colors.primary_color }}
@@ -379,15 +381,15 @@ export default function ManageMatchDetails() {
         <TabsList className="grid w-full max-w-lg grid-cols-3">
           <TabsTrigger value="lineup" className="gap-2">
             <Users className="h-4 w-4" />
-            Lineup
+            {t('matches.lineup')}
           </TabsTrigger>
           <TabsTrigger value="events" className="gap-2">
             <Target className="h-4 w-4" />
-            Events
+            {t('matches.events')}
           </TabsTrigger>
           <TabsTrigger value="result" className="gap-2">
             <Trophy className="h-4 w-4" />
-            Result
+            {t('fixtures.result')}
           </TabsTrigger>
         </TabsList>
 
@@ -396,13 +398,13 @@ export default function ManageMatchDetails() {
           {/* Add Player to Lineup */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Add to Lineup</CardTitle>
+              <CardTitle className="text-lg">{t('matches.addToLineup')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-4">
                 <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select player" />
+                    <SelectValue placeholder={t('matches.selectPlayer')} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover max-h-60">
                     {players.map((p) => (
@@ -423,7 +425,7 @@ export default function ManageMatchDetails() {
                   <SelectContent className="bg-popover">
                     {positions.map((pos) => (
                       <SelectItem key={pos} value={pos} className="capitalize">
-                        {pos}
+                        {t(`squad.${pos}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -437,15 +439,15 @@ export default function ManageMatchDetails() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-popover">
-                    <SelectItem value="first_half">First Half</SelectItem>
-                    <SelectItem value="second_half">Second Half</SelectItem>
-                    <SelectItem value="full_time">Full Time</SelectItem>
+                    <SelectItem value="first_half">{t('matches.firstHalf')}</SelectItem>
+                    <SelectItem value="second_half">{t('matches.secondHalf')}</SelectItem>
+                    <SelectItem value="full_time">{t('matches.fullTime')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Button onClick={addToLineup} disabled={!selectedPlayer}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add
+                  {t('common.add')}
                 </Button>
               </div>
             </CardContent>
@@ -459,7 +461,7 @@ export default function ManageMatchDetails() {
                 <Card key={type}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base capitalize">
-                      {type.replace('_', ' ')}
+                      {t(`matches.${type}`)}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -492,7 +494,7 @@ export default function ManageMatchDetails() {
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground text-center py-4">
-                        No players added
+                        {t('matches.noPlayersAdded')}
                       </p>
                     )}
                   </CardContent>
@@ -506,13 +508,13 @@ export default function ManageMatchDetails() {
         <TabsContent value="events" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Record Event</CardTitle>
+              <CardTitle className="text-lg">{t('matches.recordEvent')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-4">
                 <Select value={eventPlayer} onValueChange={setEventPlayer}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select player" />
+                    <SelectValue placeholder={t('matches.selectPlayer')} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover max-h-60">
                     {players.map((p) => (
@@ -531,16 +533,16 @@ export default function ManageMatchDetails() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-popover">
-                    <SelectItem value="goal">⚽ Goal</SelectItem>
-                    <SelectItem value="assist">🎯 Assist</SelectItem>
-                    <SelectItem value="yellow_card">🟨 Yellow Card</SelectItem>
-                    <SelectItem value="red_card">🟥 Red Card</SelectItem>
+                    <SelectItem value="goal">⚽ {t('matches.goal')}</SelectItem>
+                    <SelectItem value="assist">🎯 {t('matches.assist')}</SelectItem>
+                    <SelectItem value="yellow_card">🟨 {t('matches.yellowCard')}</SelectItem>
+                    <SelectItem value="red_card">🟥 {t('matches.redCard')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Input
                   type="number"
-                  placeholder="Minute"
+                  placeholder={t('matches.minute')}
                   value={eventMinute}
                   onChange={(e) => setEventMinute(e.target.value)}
                   min="1"
@@ -549,7 +551,7 @@ export default function ManageMatchDetails() {
 
                 <Button onClick={addEvent} disabled={!eventPlayer}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add
+                  {t('common.add')}
                 </Button>
               </div>
             </CardContent>
@@ -557,7 +559,7 @@ export default function ManageMatchDetails() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Match Events</CardTitle>
+              <CardTitle className="text-lg">{t('matches.events')}</CardTitle>
             </CardHeader>
             <CardContent>
               {events.length > 0 ? (
@@ -594,7 +596,7 @@ export default function ManageMatchDetails() {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-6">
-                  No events recorded
+                  {t('matches.noEventsRecorded')}
                 </p>
               )}
             </CardContent>
@@ -605,12 +607,12 @@ export default function ManageMatchDetails() {
         <TabsContent value="result" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Match Result</CardTitle>
+              <CardTitle className="text-lg">{t('matches.matchResult')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Goals Scored</Label>
+                  <Label>{t('matches.goalsScored')}</Label>
                   <Input
                     type="number"
                     value={goalsScored}
@@ -619,7 +621,7 @@ export default function ManageMatchDetails() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Goals Conceded</Label>
+                  <Label>{t('matches.goalsConceded')}</Label>
                   <Input
                     type="number"
                     value={goalsConceded}
@@ -630,14 +632,14 @@ export default function ManageMatchDetails() {
               </div>
 
               <div className="space-y-2">
-                <Label>Match Status</Label>
+                <Label>{t('matches.status')}</Label>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-popover">
-                    <SelectItem value="upcoming">Upcoming</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="upcoming">{t('fixtures.upcoming')}</SelectItem>
+                    <SelectItem value="completed">{t('fixtures.completed')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -648,7 +650,7 @@ export default function ManageMatchDetails() {
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                Save Result
+                {t('matches.saveResult')}
               </Button>
             </CardContent>
           </Card>
@@ -657,19 +659,19 @@ export default function ManageMatchDetails() {
 
       {/* Print-friendly lineup display */}
       <div className="hidden print:block">
-        <h2 className="text-xl font-bold mb-4">Match Lineup</h2>
+        <h2 className="text-xl font-bold mb-4">{t('matches.lineup')}</h2>
         {lineupTypes.map((type) => {
           const lineup = getLineupByType(type);
           if (lineup.length === 0) return null;
           return (
             <div key={type} className="mb-6">
-              <h3 className="font-bold capitalize mb-2">{type.replace('_', ' ')}</h3>
+              <h3 className="font-bold capitalize mb-2">{t(`matches.${type}`)}</h3>
               <ul>
                 {lineup.map((l) => {
                   const player = getPlayerById(l.player_id);
                   return (
                     <li key={l.id}>
-                      #{player?.jersey_number} - {player?.full_name} ({l.position_played})
+                      #{player?.jersey_number} - {player?.full_name} ({t(`squad.${l.position_played}`)})
                     </li>
                   );
                 })}

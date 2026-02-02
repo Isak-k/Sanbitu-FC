@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Newspaper, Calendar, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Announcement } from '@/lib/firestore-types';
+import { useTranslation } from 'react-i18next';
 
 // Helper to convert Firestore Timestamp or string to Date (consistent with ManageAnnouncements)
 const toDate = (value: unknown): Date => {
@@ -25,6 +26,7 @@ export default function News() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     console.log('Setting up announcements listener...');
@@ -98,10 +100,10 @@ export default function News() {
             </div>
             <div>
               <h1 className="font-display text-3xl font-bold text-foreground">
-                Club News
+                {t('news.title')}
               </h1>
               <p className="text-muted-foreground">
-                Latest updates and announcements
+                {t('news.subtitle')}
               </p>
             </div>
           </div>
@@ -113,7 +115,7 @@ export default function News() {
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
       </div>
@@ -158,9 +160,9 @@ export default function News() {
         <Card>
           <CardContent className="py-12 text-center">
             <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="font-semibold text-lg mb-2">No News Yet</h3>
+            <h3 className="font-semibold text-lg mb-2">{t('news.noNews')}</h3>
             <p className="text-muted-foreground">
-              Check back later for the latest club announcements and updates.
+              {t('news.noNewsDescription')}
             </p>
           </CardContent>
         </Card>

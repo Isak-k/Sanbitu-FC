@@ -136,7 +136,7 @@ export default function Fixtures() {
               </div>
               <div>
                 <p className="font-display text-lg font-bold text-foreground">
-                  vs {match.opponent}
+                  {t('fixtures.vs')} {match.opponent}
                 </p>
                 {match.competitions && (
                   <p className="text-sm text-muted-foreground">
@@ -170,7 +170,7 @@ export default function Fixtures() {
                 </Badge>
               </div>
             ) : (
-              <Badge className="badge-upcoming">Upcoming</Badge>
+              <Badge className="badge-upcoming">{t('fixtures.upcoming')}</Badge>
             )}
           </div>
 
@@ -193,7 +193,7 @@ export default function Fixtures() {
             )}
             <Link to={`/match/${match.id}`}>
               <Button variant="ghost" size="sm" className="text-primary">
-                Details <ChevronRight className="h-4 w-4 ml-1" />
+                {t('common.view')} <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </Link>
           </div>
@@ -212,10 +212,10 @@ export default function Fixtures() {
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold text-foreground">
-              Fixtures & Results
+              {t('fixtures.title')}
             </h1>
             <p className="text-muted-foreground">
-              {matches.length} matches this season
+              {matches.length} {t('fixtures.subtitle')}
             </p>
           </div>
         </div>
@@ -226,11 +226,11 @@ export default function Fixtures() {
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="upcoming" className="gap-2">
             <Clock className="h-4 w-4" />
-            Upcoming ({upcomingMatches.length})
+            {t('fixtures.upcoming')} ({upcomingMatches.length})
           </TabsTrigger>
           <TabsTrigger value="results" className="gap-2">
             <Trophy className="h-4 w-4" />
-            Results ({completedMatches.length})
+            {t('fixtures.completed')} ({completedMatches.length})
           </TabsTrigger>
         </TabsList>
 
@@ -243,7 +243,7 @@ export default function Fixtures() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">No upcoming matches scheduled</p>
+                <p className="text-muted-foreground">{t('fixtures.noFixtures')}</p>
               </CardContent>
             </Card>
           )}
@@ -258,7 +258,7 @@ export default function Fixtures() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">No results yet</p>
+                <p className="text-muted-foreground">{t('fixtures.noFixtures')}</p>
               </CardContent>
             </Card>
           )}

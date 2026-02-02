@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { auth } from '@/lib/firebase';
 import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -28,6 +29,7 @@ import type { AppRole } from '@/lib/firestore-types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export default function CreateUser() {
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading, user: currentUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdUser, setCreatedUser] = useState<{ email: string; full_name: string; role: string } | null>(null);
@@ -46,8 +48,8 @@ export default function CreateUser() {
   const verifyCurrentPassword = async () => {
     if (!currentUser || !currentPassword.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter your current password.',
+        title: t('common.error'),
+        description: t('security.passwordRequired'),
         variant: 'destructive',
       });
       return;
@@ -67,8 +69,8 @@ export default function CreateUser() {
       
       console.log('Password verification successful for creating admin user');
       toast({
-        title: 'Password Verified',
-        description: 'You can now create the administrator account.',
+        title: t('security.passwordVerified'),
+        description: t('security.canNowActionAdmin', { action: t('common.create').toLowerCase() }),
       });
 
       // Close password dialog and proceed with user creation
@@ -77,8 +79,8 @@ export default function CreateUser() {
     } catch (error: any) {
       console.error('Password verification failed:', error);
       toast({
-        title: 'Incorrect Password',
-        description: 'The current password you entered is incorrect.',
+        title: t('security.incorrectPassword'),
+        description: t('security.incorrectPasswordMessage'),
         variant: 'destructive',
       });
     } finally {
@@ -115,7 +117,7 @@ export default function CreateUser() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create user');
+        throw new Error(data.error || t('users.failedToCreateUser'));
       }
 
       setCreatedUser({
@@ -125,8 +127,8 @@ export default function CreateUser() {
       });
 
       toast({
-        title: 'User Created Successfully',
-        description: `${fullName} has been added as a ${role}.`,
+        title: t('users.userCreatedSuccessfully'),
+        description: t('users.userAddedAsRole', { name: fullName, role: t(`users.roles.${role}`) }),
       });
 
       // Reset form
@@ -138,8 +140,8 @@ export default function CreateUser() {
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast({
-        title: 'Error Creating User',
-        description: error.message || 'An unexpected error occurred',
+        title: t('common.error'),
+        description: error.message || t('common.operationFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -185,13 +187,13 @@ export default function CreateUser() {
           <DialogHeader>
             <DialogTitle className="font-display flex items-center gap-2">
               <Lock className="h-5 w-5 text-amber-600" />
-              Admin Security Verification
+              {t('security.adminSecurityVerification')}
             </DialogTitle>
             <DialogDescription>
-              You are creating an administrator account. Please enter your current password to continue.
+              {t('security.enterCurrentPasswordCreate')}
               <br />
               <span className="text-xs text-muted-foreground mt-2 block">
-                This security measure prevents unauthorized creation of admin accounts.
+                {t('security.securityMeasure')}
               </span>
             </DialogDescription>
           </DialogHeader>
@@ -200,24 +202,24 @@ export default function CreateUser() {
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 text-amber-800">
                 <Shield className="h-4 w-4" />
-                <span className="font-medium">Security Notice</span>
+                <span className="font-medium">{t('security.securityNotice')}</span>
               </div>
               <p className="text-sm text-amber-700 mt-1">
-                Creating Administrator: <strong>{fullName}</strong> ({email})
+                {t('common.create')} {t('users.roles.admin')}: <strong>{fullName}</strong> ({email})
               </p>
               <p className="text-sm text-red-600 mt-1 font-medium">
-                ⚠️ This will grant full administrative privileges to the new user.
+                ⚠️ {t('security.adminPrivileges')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currentPasswordCreate">Your Current Password *</Label>
+              <Label htmlFor="currentPasswordCreate">{t('security.currentPassword')} *</Label>
               <Input
                 id="currentPasswordCreate"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter your current password"
+                placeholder={t('security.enterPassword')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     verifyCurrentPassword();
@@ -236,7 +238,7 @@ export default function CreateUser() {
                   setCurrentPassword('');
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 onClick={verifyCurrentPassword} 
@@ -244,7 +246,7 @@ export default function CreateUser() {
                 className="gap-2 bg-amber-600 hover:bg-amber-700"
               >
                 {isVerifyingPassword && <Loader2 className="h-4 w-4 animate-spin" />}
-                Verify & Create Admin
+                {t('security.verifyAndCreateAdmin')}
               </Button>
             </div>
           </div>
@@ -258,10 +260,10 @@ export default function CreateUser() {
         </div>
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">
-            Create User Account
+            {t('users.createUserAccount')}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Add new members to the club portal
+            {t('users.addNewMembers')}
           </p>
         </div>
       </div>
@@ -275,10 +277,10 @@ export default function CreateUser() {
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div className="text-sm">
-                <p className="font-medium text-foreground mb-1">User Created Successfully!</p>
+                <p className="font-medium text-foreground mb-1">{t('users.userCreatedSuccessfully')}!</p>
                 <p className="text-muted-foreground">
-                  <strong>{createdUser.full_name}</strong> ({createdUser.email}) has been added as a{' '}
-                  <strong className="capitalize">{createdUser.role}</strong>.
+                  <strong>{createdUser.full_name}</strong> ({createdUser.email}) {t('common.hasBeen')} {t('common.added').toLowerCase()} {t('common.as').toLowerCase()} {' '}
+                  <strong className="capitalize">{t(`users.roles.${createdUser.role}`)}</strong>.
                 </p>
               </div>
             </div>
@@ -288,51 +290,51 @@ export default function CreateUser() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display text-lg">New User Details</CardTitle>
+          <CardTitle className="font-display text-lg">{t('users.newUserDetails')}</CardTitle>
           <CardDescription>
-            Create login credentials for players, staff, or administrators
+            {t('users.createLoginCredentials')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name *</Label>
+              <Label htmlFor="fullName">{t('users.fullName')} *</Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="John Doe"
+                placeholder={t('users.userPlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email">{t('users.email')} *</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
+                placeholder={t('users.emailPlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t('auth.password')} *</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimum 6 characters"
+                placeholder={t('users.minimumCharacters')}
                 minLength={6}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label>User Role *</Label>
+              <Label>{t('users.userRole')} *</Label>
               <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -341,13 +343,13 @@ export default function CreateUser() {
                   <SelectItem value="user">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      <span>User (View Only)</span>
+                      <span>{t('users.roleUserViewOnly')}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="player">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      <span>Player</span>
+                      <span>{t('users.roles.player')}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="admin">
@@ -356,16 +358,16 @@ export default function CreateUser() {
                         <Lock className="h-3 w-3 text-amber-600" />
                         <Shield className="h-4 w-4" />
                       </div>
-                      <span>Administrator</span>
+                      <span>{t('users.roles.admin')}</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                Admins have full control over players, matches, and announcements
+                {t('users.fullControl')}
                 {role === 'admin' && (
                   <span className="block text-amber-600 font-medium mt-1">
-                    🔒 Creating admin accounts requires password verification
+                    🔒 {t('security.creatingAdminRequiresPassword')}
                   </span>
                 )}
               </p>
@@ -380,7 +382,7 @@ export default function CreateUser() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Creating...
+                    {t('users.creating')}
                   </>
                 ) : (
                   <>
@@ -389,7 +391,7 @@ export default function CreateUser() {
                     ) : (
                       <UserPlus className="h-4 w-4" />
                     )}
-                    {role === 'admin' ? 'Create Admin Account (Requires Password)' : 'Create User Account'}
+                    {role === 'admin' ? t('users.createAdminAccount') : t('users.createUserAccount')}
                   </>
                 )}
               </Button>

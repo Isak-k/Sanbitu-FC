@@ -39,7 +39,7 @@ export default function Login() {
                 <h1 className="font-display text-3xl font-bold text-white">
                   Sanbitu FC
                 </h1>
-                <p className="text-white/70 text-sm">Established 2014</p>
+                <p className="text-white/70 text-sm">{t('auth.established')}</p>
               </div>
             </div>
             
@@ -60,19 +60,19 @@ export default function Login() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                 <Users className="h-5 w-5" />
               </div>
-              <span>View squad & player profiles</span>
+              <span>{t('auth.featureSquad')}</span>
             </div>
             <div className="flex items-center gap-4 text-white/90">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                 <Calendar className="h-5 w-5" />
               </div>
-              <span>Match fixtures & live results</span>
+              <span>{t('auth.featureFixtures')}</span>
             </div>
             <div className="flex items-center gap-4 text-white/90">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                 <Shield className="h-5 w-5" />
               </div>
-              <span>Exclusive member access</span>
+              <span>{t('auth.featureAccess')}</span>
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@ export default function Login() {
               <h1 className="font-display text-xl font-bold text-foreground">
                 Sanbitu FC
               </h1>
-              <p className="text-xs text-muted-foreground">Est. 2014</p>
+              <p className="text-xs text-muted-foreground">{t('auth.established')}</p>
             </div>
           </div>
 

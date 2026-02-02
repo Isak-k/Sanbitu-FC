@@ -24,6 +24,7 @@ import type { MatchWithDetails, Announcement, KitColor, Competition } from '@/li
 
 export default function Dashboard() {
   const { user, isAdmin } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalPlayers: 0,
     upcomingMatches: 0,
@@ -44,62 +45,74 @@ export default function Dashboard() {
       where('is_active', '==', true)
     );
     
-    const unsubscribePlayers = onSnapshot(playersQuery, (snapshot) => {
-      const playerCount = snapshot.size;
-      setStats(prev => ({ ...prev, totalPlayers: playerCount }));
-    });
+    const unsubscribePlayers = onSnapshot(
+      playersQuery,
+      (snapshot) => {
+        const playerCount = snapshot.size;
+        setStats(prev => ({ ...prev, totalPlayers: playerCount }));
+      },
+      (error) => {
+        console.warn('Players listener error:', error);
+      }
+    );
     unsubscribers.push(unsubscribePlayers);
 
     // Real-time listener for matches
-    const unsubscribeMatches = onSnapshot(collection(db, 'matches'), async (matchesSnapshot) => {
-      try {
-        const matchesData: MatchWithDetails[] = [];
-        
-        // Get kit colors and competitions for enrichment
-        const kitColorsSnapshot = await getDocs(collection(db, 'kit_colors'));
-        const kitColorsMap = new Map<string, KitColor>();
-        kitColorsSnapshot.forEach(doc => {
-          kitColorsMap.set(doc.id, { id: doc.id, ...doc.data() } as KitColor);
-        });
-        
-        const competitionsSnapshot = await getDocs(collection(db, 'competitions'));
-        const competitionsMap = new Map<string, Competition>();
-        competitionsSnapshot.forEach(doc => {
-          competitionsMap.set(doc.id, { id: doc.id, ...doc.data() } as Competition);
-        });
+    const unsubscribeMatches = onSnapshot(
+      collection(db, 'matches'),
+      async (matchesSnapshot) => {
+        try {
+          const matchesData: MatchWithDetails[] = [];
+          
+          // Get kit colors and competitions for enrichment
+          const kitColorsSnapshot = await getDocs(collection(db, 'kit_colors'));
+          const kitColorsMap = new Map<string, KitColor>();
+          kitColorsSnapshot.forEach(doc => {
+            kitColorsMap.set(doc.id, { id: doc.id, ...doc.data() } as KitColor);
+          });
+          
+          const competitionsSnapshot = await getDocs(collection(db, 'competitions'));
+          const competitionsMap = new Map<string, Competition>();
+          competitionsSnapshot.forEach(doc => {
+            competitionsMap.set(doc.id, { id: doc.id, ...doc.data() } as Competition);
+          });
 
-        matchesSnapshot.forEach(doc => {
-          const data = doc.data();
-          matchesData.push({
-            id: doc.id,
-            ...data,
-            // Handle both old kit_color_id and new kit_color formats
-            kit_colors: data.kit_color_id ? kitColorsMap.get(data.kit_color_id) || null : null,
-            kit_color: data.kit_color || null, // New format: direct color string
-            competitions: data.competition_id ? competitionsMap.get(data.competition_id) || null : null,
-          } as MatchWithDetails);
-        });
+          matchesSnapshot.forEach(doc => {
+            const data = doc.data();
+            matchesData.push({
+              id: doc.id,
+              ...data,
+              // Handle both old kit_color_id and new kit_color formats
+              kit_colors: data.kit_color_id ? kitColorsMap.get(data.kit_color_id) || null : null,
+              kit_color: data.kit_color || null, // New format: direct color string
+              competitions: data.competition_id ? competitionsMap.get(data.competition_id) || null : null,
+            } as MatchWithDetails);
+          });
 
-        const upcoming = matchesData.filter(m => m.status === 'upcoming');
-        const completed = matchesData.filter(m => m.status === 'completed');
-        const totalPoints = completed.reduce((acc, m) => acc + (m.points_earned || 0), 0);
+          const upcoming = matchesData.filter(m => m.status === 'upcoming');
+          const completed = matchesData.filter(m => m.status === 'completed');
+          const totalPoints = completed.reduce((acc, m) => acc + (m.points_earned || 0), 0);
 
-        // Get next match
-        const sortedUpcoming = upcoming.sort(
-          (a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime()
-        );
+          // Get next match
+          const sortedUpcoming = upcoming.sort(
+            (a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime()
+          );
 
-        setStats(prev => ({
-          ...prev,
-          upcomingMatches: upcoming.length,
-          matchesPlayed: completed.length,
-          totalPoints,
-        }));
-        setNextMatch(sortedUpcoming[0] || null);
-      } catch (error) {
-        console.error('Error processing matches data:', error);
+          setStats(prev => ({
+            ...prev,
+            upcomingMatches: upcoming.length,
+            matchesPlayed: completed.length,
+            totalPoints,
+          }));
+          setNextMatch(sortedUpcoming[0] || null);
+        } catch (error) {
+          console.error('Error processing matches data:', error);
+        }
+      },
+      (error) => {
+        console.warn('Matches listener error:', error);
       }
-    });
+    );
     unsubscribers.push(unsubscribeMatches);
 
     // Real-time listener for announcements
@@ -110,13 +123,19 @@ export default function Dashboard() {
       limit(3)
     );
     
-    const unsubscribeAnnouncements = onSnapshot(announcementsQuery, (snapshot) => {
-      const announcementsData: Announcement[] = [];
-      snapshot.forEach(doc => {
-        announcementsData.push({ id: doc.id, ...doc.data() } as Announcement);
-      });
-      setRecentAnnouncements(announcementsData);
-    });
+    const unsubscribeAnnouncements = onSnapshot(
+      announcementsQuery,
+      (snapshot) => {
+        const announcementsData: Announcement[] = [];
+        snapshot.forEach(doc => {
+          announcementsData.push({ id: doc.id, ...doc.data() } as Announcement);
+        });
+        setRecentAnnouncements(announcementsData);
+      },
+      (error) => {
+        console.warn('Announcements listener error:', error);
+      }
+    );
     unsubscribers.push(unsubscribeAnnouncements);
 
     // Set loading to false after initial setup

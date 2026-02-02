@@ -51,15 +51,15 @@ export function MobileTopHeader() {
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border md:hidden">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border md:hidden mobile-safe-top">
       <div className="flex items-center justify-between px-4 py-3">
         {/* Left side - Admin/Settings */}
         <div className="flex items-center gap-2">
           {isAdmin && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Settings className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="h-12 w-12 p-0">
+                  <Settings className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 bg-popover mt-2">
@@ -72,8 +72,8 @@ export function MobileTopHeader() {
                   const Icon = item.icon;
                   return (
                     <DropdownMenuItem key={item.href} asChild>
-                      <Link to={item.href} className="flex items-center gap-3 py-2.5">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                      <Link to={item.href} className="flex items-center gap-3 py-3">
+                        <Icon className="h-5 w-5 text-muted-foreground" />
                         <span>{t(item.label)}</span>
                       </Link>
                     </DropdownMenuItem>
@@ -82,9 +82,9 @@ export function MobileTopHeader() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={signOut}
-                  className="text-destructive focus:text-destructive flex items-center gap-3 py-2.5"
+                  className="text-destructive focus:text-destructive flex items-center gap-3 py-3"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-5 w-5" />
                   <span>{t('navigation.signOut')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -94,10 +94,10 @@ export function MobileTopHeader() {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 w-8 p-0"
+            className="h-12 w-12 p-0"
             onClick={handleRefresh}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-5 w-5" />
           </Button>
         </div>
 
@@ -106,34 +106,33 @@ export function MobileTopHeader() {
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
             <span className="text-primary font-bold text-sm">SF</span>
           </div>
-          <span className="font-display font-bold text-foreground">Sanbitu FC</span>
+          <span className="font-display font-bold text-foreground text-sm">Sanbitu FC</span>
         </div>
 
         {/* Right side - Notifications, Language, Theme, Profile */}
         <div className="flex items-center gap-1">
           <NotificationBell />
-          
           <LanguageSwitcher />
           
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-12 w-12 p-0"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
+              <Sun className="h-5 w-5" />
             ) : (
-              <Moon className="h-4 w-4" />
+              <Moon className="h-5 w-5" />
             )}
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 rounded-full p-0">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+              <Button variant="ghost" size="sm" className="h-12 w-12 p-0 rounded-full">
+                <Avatar className="h-8 w-8 border border-border">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    {user?.email?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </Button>

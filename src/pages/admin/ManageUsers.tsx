@@ -46,6 +46,8 @@ import { toast } from '@/hooks/use-toast';
 import type { AppRole } from '@/lib/firestore-types';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 interface UserWithRole {
@@ -57,29 +59,30 @@ interface UserWithRole {
   last_sign_in?: string;
 }
 
-const roleConfig = {
-  admin: {
-    label: 'Administrator',
-    icon: Shield,
-    color: 'text-red-600',
-    bgColor: 'bg-red-500/10',
-  },
-  player: {
-    label: 'Player',
-    icon: UserCheck,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500/10',
-  },
-  user: {
-    label: 'User',
-    icon: User,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-500/10',
-  },
-};
-
 export default function ManageUsers() {
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading, user: currentUser } = useAuth();
+
+  const roleConfig = {
+    admin: {
+      label: t('users.roles.admin'),
+      icon: Shield,
+      color: 'text-red-600',
+      bgColor: 'bg-red-500/10',
+    },
+    player: {
+      label: t('users.roles.player'),
+      icon: UserCheck,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-500/10',
+    },
+    user: {
+      label: t('users.roles.user'),
+      icon: User,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-500/10',
+    },
+  };
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -126,8 +129,8 @@ export default function ManageUsers() {
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch users.',
+        title: t('common.error'),
+        description: t('users.failedToFetchUsers'),
         variant: 'destructive',
       });
     } finally {
@@ -177,8 +180,8 @@ export default function ManageUsers() {
   const verifyCurrentPassword = async () => {
     if (!currentUser || !currentPassword.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter your current password.',
+        title: t('common.error'),
+        description: t('users.enterPassword'),
         variant: 'destructive',
       });
       return;
@@ -198,8 +201,8 @@ export default function ManageUsers() {
       
       console.log('Password verification successful for action:', pendingAction);
       toast({
-        title: 'Password Verified',
-        description: `You can now ${pendingAction} the admin user.`,
+        title: t('users.passwordVerified'),
+        description: t('users.canNowActionAdmin', { action: pendingAction === 'edit' ? t('common.edit') : t('common.delete') }),
       });
 
       // Close password dialog and proceed with the intended action
@@ -213,8 +216,8 @@ export default function ManageUsers() {
     } catch (error: any) {
       console.error('Password verification failed:', error);
       toast({
-        title: 'Incorrect Password',
-        description: 'The current password you entered is incorrect.',
+        title: t('users.incorrectPassword'),
+        description: t('users.incorrectPasswordDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -238,8 +241,8 @@ export default function ManageUsers() {
       });
 
       toast({
-        title: 'User Updated',
-        description: `${fullName} has been updated successfully.`,
+        title: t('users.userUpdated'),
+        description: t('users.userUpdatedDesc', { name: fullName }),
       });
 
       setIsDialogOpen(false);
@@ -247,8 +250,8 @@ export default function ManageUsers() {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update user.',
+        title: t('common.error'),
+        description: error.message || t('users.failedToUpdateUser'),
         variant: 'destructive',
       });
     } finally {
@@ -259,11 +262,11 @@ export default function ManageUsers() {
   const proceedWithDelete = async (user: UserWithRole) => {
     // Confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${user.full_name}?\n\n` +
-      `Email: ${user.email}\n` +
-      `Role: ${roleConfig[user.role].label}\n\n` +
-      `This will permanently remove the user from the system.\n` +
-      `This action cannot be undone.`
+      t('users.deleteUserConfirmation', {
+        name: user.full_name,
+        email: user.email,
+        role: roleConfig[user.role].label
+      })
     );
 
     if (!confirmed) return;
@@ -294,8 +297,8 @@ export default function ManageUsers() {
       }
 
       toast({
-        title: 'User Deleted',
-        description: `${user.full_name} has been permanently removed from the system.`,
+        title: t('users.userDeleted'),
+        description: t('users.userDeletedDesc', { name: user.full_name }),
       });
 
       fetchUsers();
@@ -305,15 +308,15 @@ export default function ManageUsers() {
         await deleteDoc(doc(db, 'user_roles', user.id));
         
         toast({
-          title: 'User Deleted',
-          description: `${user.full_name} has been removed from the system.`,
+          title: t('users.userDeleted'),
+          description: t('users.userDeletedFallbackDesc', { name: user.full_name }),
         });
 
         fetchUsers();
       } catch (fallbackError: any) {
         toast({
-          title: 'Error',
-          description: fallbackError.message || 'Failed to delete user.',
+          title: t('common.error'),
+          description: fallbackError.message || t('users.failedToDeleteUser'),
           variant: 'destructive',
         });
       }
@@ -347,10 +350,10 @@ export default function ManageUsers() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">
-              Manage Users
+              {t('users.manageUsers')}
             </h1>
             <p className="text-muted-foreground text-sm">
-              {users.length} users registered
+              {users.length} {t('users.usersRegistered')}
             </p>
           </div>
         </div>
@@ -368,13 +371,13 @@ export default function ManageUsers() {
           <DialogHeader className="p-6 pb-2">
             <DialogTitle className="font-display flex items-center gap-2">
               <Lock className="h-5 w-5 text-amber-600" />
-              Admin Security Verification
+              {t('users.adminSecurityVerification')}
             </DialogTitle>
             <DialogDescription>
-              You are {pendingAction === 'edit' ? 'editing' : 'deleting'} an administrator account. Please enter your current password to continue.
+              {t('users.securityVerificationDesc', { action: pendingAction === 'edit' ? t('common.editing') : t('common.deleting') })}
               <br />
               <span className="text-xs text-muted-foreground mt-2 block">
-                This security measure prevents unauthorized changes to admin accounts.
+                {t('users.securityVerificationDesc2')}
               </span>
             </DialogDescription>
           </DialogHeader>
@@ -383,26 +386,26 @@ export default function ManageUsers() {
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 text-amber-800">
                 <Shield className="h-4 w-4" />
-                <span className="font-medium">Security Notice</span>
+                <span className="font-medium">{t('users.securityNotice')}</span>
               </div>
               <p className="text-sm text-amber-700 mt-1">
-                {pendingAction === 'edit' ? 'Editing' : 'Deleting'}: <strong>{editingUser?.full_name}</strong> ({editingUser?.email})
+                {pendingAction === 'edit' ? t('common.editing') : t('common.deleting')}: <strong>{editingUser?.full_name}</strong> ({editingUser?.email})
               </p>
               {pendingAction === 'delete' && (
                 <p className="text-sm text-red-600 mt-1 font-medium">
-                  ⚠️ This will permanently remove the admin user from the system.
+                  ⚠️ {t('users.permanentRemoveAdmin')}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Your Current Password *</Label>
+              <Label htmlFor="currentPassword">{t('users.currentPassword')} *</Label>
               <Input
                 id="currentPassword"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter your current password"
+                placeholder={t('users.enterCurrentPassword')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     verifyCurrentPassword();
@@ -423,7 +426,7 @@ export default function ManageUsers() {
                   setPendingAction(null);
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 onClick={verifyCurrentPassword} 
@@ -431,7 +434,7 @@ export default function ManageUsers() {
                 className={`gap-2 ${pendingAction === 'delete' ? 'bg-red-600 hover:bg-red-700' : ''}`}
               >
                 {isVerifyingPassword && <Loader2 className="h-4 w-4 animate-spin" />}
-                Verify & {pendingAction === 'edit' ? 'Edit' : 'Delete'}
+                {t('users.verifyAndAction', { action: pendingAction === 'edit' ? t('common.edit') : t('common.delete') })}
               </Button>
             </div>
           </div>
@@ -447,38 +450,38 @@ export default function ManageUsers() {
       }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0">
           <DialogHeader className="p-6 pb-2">
-            <DialogTitle className="font-display">Edit User</DialogTitle>
+            <DialogTitle className="font-display">{t('users.editUser')}</DialogTitle>
             <DialogDescription>
-              Update user information and role
+              {t('users.updateUserInfo')}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pt-2 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name *</Label>
+              <Label htmlFor="fullName">{t('players.fullName')} *</Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="User's full name"
+                placeholder={t('users.fullNamePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email">{t('users.emailAddress')} *</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
+                placeholder={t('players.emailPlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label>User Role *</Label>
+              <Label>{t('users.userRole')} *</Label>
               <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -487,19 +490,19 @@ export default function ManageUsers() {
                   <SelectItem value="user">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      <span>User (View Only)</span>
+                      <span>{t('users.userViewOnly')}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="player">
                     <div className="flex items-center gap-2">
                       <UserCheck className="h-4 w-4" />
-                      <span>Player</span>
+                      <span>{t('users.roles.player')}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="admin">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4" />
-                      <span>Administrator</span>
+                      <span>{t('users.roles.admin')}</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -515,11 +518,11 @@ export default function ManageUsers() {
                   resetForm();
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Save Changes
+                {t('users.saveChanges')}
               </Button>
             </div>
           </form>
@@ -532,11 +535,11 @@ export default function ManageUsers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('users.user')}</TableHead>
+                <TableHead>{t('users.email')}</TableHead>
+                <TableHead>{t('users.role')}</TableHead>
+                <TableHead>{t('users.created')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -574,7 +577,7 @@ export default function ManageUsers() {
                           variant="ghost"
                           size="sm"
                           onClick={() => openEditDialog(user)}
-                          title={user.role === 'admin' ? 'Edit admin (requires password verification)' : 'Edit user'}
+                          title={user.role === 'admin' ? t('users.editAdminVerification') : t('users.editUser')}
                           className={user.role === 'admin' ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50' : ''}
                         >
                           {user.role === 'admin' ? (
@@ -590,7 +593,7 @@ export default function ManageUsers() {
                           variant="ghost"
                           size="sm"
                           onClick={() => deleteUser(user)}
-                          title={user.role === 'admin' ? 'Delete admin (requires password verification)' : 'Delete user'}
+                          title={user.role === 'admin' ? t('users.deleteAdminVerification') : t('users.deleteUser')}
                           className={`text-destructive hover:text-destructive hover:bg-destructive/10 ${
                             user.role === 'admin' ? 'text-red-600 hover:text-red-700' : ''
                           }`}

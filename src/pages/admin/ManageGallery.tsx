@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, deleteDoc, updateDoc, doc, getDocs, query, orderBy } from 'firebase/firestore';
 import { uploadToCloudinary } from '@/lib/cloudinary';
@@ -20,6 +21,7 @@ import {
 import type { GalleryItem } from '@/lib/firestore-types';
 
 export default function ManageGallery() {
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading } = useAuth();
   const [images, setImages] = useState<GalleryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,8 +69,8 @@ export default function ManageGallery() {
     e.preventDefault();
     if (!imageFile) {
       toast({
-        title: 'Error',
-        description: 'Please select an image to upload.',
+        title: t('common.error'),
+        description: t('gallery.selectImageToUpload'),
         variant: 'destructive',
       });
       return;
@@ -90,8 +92,8 @@ export default function ManageGallery() {
       });
 
       toast({
-        title: 'Photo Added',
-        description: 'The photo has been added to the gallery.',
+        title: t('gallery.photoAdded'),
+        description: t('gallery.photoAddedDesc'),
       });
 
       setTitle('');
@@ -101,8 +103,8 @@ export default function ManageGallery() {
       fetchGallery();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to add photo.',
+        title: t('common.error'),
+        description: error.message || t('gallery.failedToAdd'),
         variant: 'destructive',
       });
     } finally {
@@ -111,21 +113,21 @@ export default function ManageGallery() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this photo?')) return;
+    if (!confirm(t('gallery.deleteConfirm'))) return;
 
     try {
       await deleteDoc(doc(db, 'gallery', id));
 
       toast({
-        title: 'Photo Deleted',
-        description: 'The photo has been removed from the gallery.',
+        title: t('gallery.photoDeleted'),
+        description: t('gallery.photoDeletedDesc'),
       });
 
       fetchGallery();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete photo.',
+        title: t('common.error'),
+        description: error.message || t('gallery.failedToDelete'),
         variant: 'destructive',
       });
     }
@@ -141,15 +143,15 @@ export default function ManageGallery() {
       });
 
       toast({
-        title: newVisibility ? 'Photo Visible' : 'Photo Hidden',
-        description: `Photo is now ${newVisibility ? 'visible' : 'hidden'} to users.`,
+        title: newVisibility ? t('gallery.photoVisible') : t('gallery.photoHidden'),
+        description: t('gallery.photoVisibilityDesc', { status: newVisibility ? t('common.active').toLowerCase() : t('common.inactive').toLowerCase() }),
       });
 
       fetchGallery();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update visibility.',
+        title: t('common.error'),
+        description: error.message || t('gallery.failedToUpdateVisibility'),
         variant: 'destructive',
       });
     }
@@ -177,10 +179,10 @@ export default function ManageGallery() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">
-              Manage Gallery
+              {t('gallery.manageGallery')}
             </h1>
             <p className="text-muted-foreground text-sm">
-              Upload and manage club photos
+              {t('gallery.uploadAndManage')}
             </p>
           </div>
         </div>
@@ -189,12 +191,12 @@ export default function ManageGallery() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Add Photo
+              {t('gallery.addPhoto')}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-background max-h-[90vh] flex flex-col p-0 sm:max-w-md">
             <DialogHeader className="p-6 pb-2">
-              <DialogTitle>Add New Photo</DialogTitle>
+              <DialogTitle>{t('gallery.addNewPhoto')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pt-2 space-y-4">
               {/* Image Upload */}
@@ -212,7 +214,7 @@ export default function ManageGallery() {
                   ) : (
                     <div className="text-center">
                       <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">Click to select image</p>
+                      <p className="text-sm text-muted-foreground">{t('gallery.clickToSelect')}</p>
                     </div>
                   )}
                 </div>
@@ -226,7 +228,7 @@ export default function ManageGallery() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title">Title (Optional)</Label>
+                <Label htmlFor="title">{t('gallery.titleOptional')}</Label>
                 <Input
                   id="title"
                   value={title}
@@ -239,10 +241,10 @@ export default function ManageGallery() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading...
+                    {t('gallery.uploading')}
                   </>
                 ) : (
-                  'Add Photo'
+                  t('gallery.addPhoto')
                 )}
               </Button>
             </form>
@@ -258,13 +260,13 @@ export default function ManageGallery() {
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">No photos in the gallery</p>
+            <p className="text-muted-foreground">{t('gallery.noPhotosInGallery')}</p>
             <Button
               variant="outline"
               className="mt-4"
               onClick={() => setDialogOpen(true)}
             >
-              Add Your First Photo
+              {t('gallery.addFirstPhoto')}
             </Button>
           </CardContent>
         </Card>
@@ -275,7 +277,7 @@ export default function ManageGallery() {
               <div className="aspect-square">
                 <img
                   src={image.image_url}
-                  alt={image.title || 'Gallery image'}
+                  alt={image.title || t('gallery.title')}
                   className={`w-full h-full object-cover ${image.is_visible === false ? 'opacity-50' : ''}`}
                 />
               </div>
@@ -284,7 +286,7 @@ export default function ManageGallery() {
                   variant="secondary"
                   size="icon"
                   onClick={() => toggleVisibility(image)}
-                  title={image.is_visible !== false ? 'Hide from users' : 'Show to users'}
+                  title={image.is_visible !== false ? t('gallery.hideFromUsers') : t('gallery.showToUsers')}
                 >
                   {image.is_visible !== false ? (
                     <Eye className="h-4 w-4" />

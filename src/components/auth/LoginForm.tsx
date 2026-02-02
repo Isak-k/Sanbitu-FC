@@ -92,9 +92,9 @@ export function LoginForm() {
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Access is restricted to registered members only.
+        {t('auth.accessRestricted')}
         <br />
-        Contact your administrator for access.
+        {t('auth.contactAdmin')}
       </p>
     </form>
   );

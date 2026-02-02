@@ -26,6 +26,7 @@ import type {
   Competition 
 } from '@/lib/firestore-types';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 // Helper to convert Firestore Timestamp or string to Date
 const toDate = (value: unknown): Date => {
@@ -44,6 +45,7 @@ const toDate = (value: unknown): Date => {
 const positionOrder = ['goalkeeper', 'defender', 'midfielder', 'forward'];
 
 export default function MatchDetails() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [match, setMatch] = useState<MatchWithDetails | null>(null);
   const [lineups, setLineups] = useState<MatchLineupWithPlayer[]>([]);
@@ -144,11 +146,11 @@ export default function MatchDetails() {
   if (!match) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Match not found</p>
+        <p className="text-muted-foreground">{t('messages.notFound')}</p>
         <Link to="/fixtures">
           <Button variant="outline" className="mt-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Fixtures
+            {t('common.back')}
           </Button>
         </Link>
       </div>
@@ -194,7 +196,7 @@ export default function MatchDetails() {
               <div>
                 <p className="font-medium text-sm">{l.players?.full_name}</p>
                 <p className="text-xs text-muted-foreground capitalize">
-                  {l.position_played}
+                  {t(`squad.${l.position_played}`)}
                 </p>
               </div>
             </div>
@@ -210,7 +212,7 @@ export default function MatchDetails() {
       <Link to="/fixtures">
         <Button variant="ghost" size="sm" className="gap-2">
           <ArrowLeft className="h-4 w-4" />
-          Back to Fixtures
+          {t('common.back')} {t('fixtures.title')}
         </Button>
       </Link>
 
@@ -235,7 +237,7 @@ export default function MatchDetails() {
               match.status === 'completed' && 'badge-completed'
             )}
           >
-            {match.status === 'upcoming' ? 'Upcoming' : 'Full Time'}
+            {match.status === 'upcoming' ? t('fixtures.upcoming') : t('fixtures.fullTime')}
           </Badge>
 
           <div className="flex items-center justify-center gap-8">
@@ -292,7 +294,7 @@ export default function MatchDetails() {
                   <MapPin className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Venue</p>
+                  <p className="text-xs text-muted-foreground">{t('fixtures.venue')}</p>
                   <p className="font-medium">{match.stadium}</p>
                 </div>
               </div>
@@ -303,7 +305,7 @@ export default function MatchDetails() {
                   <Trophy className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Competition</p>
+                  <p className="text-xs text-muted-foreground">{t('fixtures.competition')}</p>
                   <p className="font-medium">{match.competitions.name}</p>
                 </div>
               </div>
@@ -315,7 +317,7 @@ export default function MatchDetails() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div>
-                    <p className="text-xs text-muted-foreground">Match Kit</p>
+                    <p className="text-xs text-muted-foreground">{t('matches.kitColor')}</p>
                     <p className="font-medium">{match.kit_colors.name}</p>
                   </div>
                   <div
@@ -335,19 +337,19 @@ export default function MatchDetails() {
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              Match Lineup
+              {t('matches.lineup')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {lineups.length > 0 ? (
               <>
-                <LineupSection lineup={firstHalfLineup} title="First Half" />
-                <LineupSection lineup={secondHalfLineup} title="Second Half" />
-                <LineupSection lineup={fullTimeLineup} title="Full Time" />
+                <LineupSection lineup={firstHalfLineup} title={t('matches.firstHalf')} />
+                <LineupSection lineup={secondHalfLineup} title={t('matches.secondHalf')} />
+                <LineupSection lineup={fullTimeLineup} title={t('matches.fullTime')} />
               </>
             ) : (
               <p className="text-center text-muted-foreground py-6">
-                Lineup not yet announced
+                {t('squad.noPlayers')}
               </p>
             )}
           </CardContent>
@@ -358,7 +360,7 @@ export default function MatchDetails() {
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              Match Events
+              {t('matches.events')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -367,7 +369,7 @@ export default function MatchDetails() {
                 {goals.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                      ⚽ Goals
+                      ⚽ {t('matches.goal')}s
                     </h4>
                     {goals.map((event) => (
                       <div
@@ -388,7 +390,7 @@ export default function MatchDetails() {
                 {assists.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                      🎯 Assists
+                      🎯 {t('matches.assist')}s
                     </h4>
                     {assists.map((event) => (
                       <div
@@ -406,29 +408,43 @@ export default function MatchDetails() {
                   </div>
                 )}
 
-                {(yellowCards.length > 0 || redCards.length > 0) && (
+                {yellowCards.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                      📋 Cards
+                      � {t('matches.yellow_card')}s
                     </h4>
                     {yellowCards.map((event) => (
                       <div
                         key={event.id}
                         className="flex items-center gap-3 py-2"
                       >
-                        <div className="h-4 w-3 bg-yellow-400 rounded-sm" />
-                        <Badge variant="outline">{event.minute}'</Badge>
-                        <span>{event.players?.full_name}</span>
+                        <Badge variant="outline" className="bg-amber-500/10">
+                          {event.minute}'
+                        </Badge>
+                        <span className="font-medium">
+                          {event.players?.full_name}
+                        </span>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {redCards.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                      🟥 {t('matches.red_card')}s
+                    </h4>
                     {redCards.map((event) => (
                       <div
                         key={event.id}
                         className="flex items-center gap-3 py-2"
                       >
-                        <div className="h-4 w-3 bg-red-500 rounded-sm" />
-                        <Badge variant="outline">{event.minute}'</Badge>
-                        <span>{event.players?.full_name}</span>
+                        <Badge variant="outline" className="bg-rose-500/10">
+                          {event.minute}'
+                        </Badge>
+                        <span className="font-medium">
+                          {event.players?.full_name}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -436,7 +452,7 @@ export default function MatchDetails() {
               </>
             ) : (
               <p className="text-center text-muted-foreground py-6">
-                No events recorded
+                {t('dashboard.noMatches')}
               </p>
             )}
           </CardContent>

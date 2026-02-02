@@ -38,6 +38,7 @@ import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import type { MatchWithDetails, Competition } from '@/lib/firestore-types';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 // Helper to convert Firestore Timestamp or string to Date
 const toDate = (value: unknown): Date => {
@@ -54,6 +55,7 @@ const toDate = (value: unknown): Date => {
 };
 
 export default function ManageMatches() {
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading } = useAuth();
   const [matches, setMatches] = useState<MatchWithDetails[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -63,13 +65,13 @@ export default function ManageMatches() {
 
   // Predefined competition types
   const defaultCompetitions: Competition[] = [
-    { id: 'league', name: 'League Matches', created_at: new Date().toISOString() },
-    { id: 'derby', name: 'Derby Matches', created_at: new Date().toISOString() },
-    { id: 'cup', name: 'Cup Matches', created_at: new Date().toISOString() },
-    { id: 'international', name: 'International Matches', created_at: new Date().toISOString() },
-    { id: 'qualification', name: 'Qualification Matches', created_at: new Date().toISOString() },
-    { id: 'final', name: 'Final Matches', created_at: new Date().toISOString() },
-    { id: 'friendly', name: 'Friendly Matches', created_at: new Date().toISOString() },
+    { id: 'league', name: t('matches.competitions.league'), created_at: new Date().toISOString() },
+    { id: 'derby', name: t('matches.competitions.derby'), created_at: new Date().toISOString() },
+    { id: 'cup', name: t('matches.competitions.cup'), created_at: new Date().toISOString() },
+    { id: 'international', name: t('matches.competitions.international'), created_at: new Date().toISOString() },
+    { id: 'qualification', name: t('matches.competitions.qualification'), created_at: new Date().toISOString() },
+    { id: 'final', name: t('matches.competitions.final'), created_at: new Date().toISOString() },
+    { id: 'friendly', name: t('matches.competitions.friendly'), created_at: new Date().toISOString() },
   ];
 
   // Form state
@@ -163,8 +165,8 @@ export default function ManageMatches() {
       });
 
       toast({
-        title: 'Match Scheduled',
-        description: `Match against ${opponent} has been scheduled.`,
+        title: t('matches.matchScheduled'),
+        description: t('matches.matchScheduledDesc', { opponent }),
       });
 
       setIsDialogOpen(false);
@@ -172,8 +174,8 @@ export default function ManageMatches() {
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to schedule match.',
+        title: t('common.error'),
+        description: error.message || t('matches.failedToSchedule'),
         variant: 'destructive',
       });
     } finally {
@@ -193,48 +195,36 @@ export default function ManageMatches() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const toggleVisibility = async (match: MatchWithDetails) => {
-    if (!match.id) return;
-    
+  const toggleVisibility = async (matchId: string, currentVisibility: boolean) => {
     try {
-      const newVisibility = !(match.is_visible !== false);
-      await updateDoc(doc(db, 'matches', match.id), {
+      const newVisibility = !currentVisibility;
+      await updateDoc(doc(db, 'matches', matchId), {
         is_visible: newVisibility,
       });
 
       toast({
-        title: newVisibility ? 'Match Visible' : 'Match Hidden',
-        description: `Match vs ${match.opponent} is now ${newVisibility ? 'visible' : 'hidden'} to users.`,
+        title: newVisibility ? t('matches.matchVisible') : t('matches.matchHidden'),
+        description: t('matches.visibilityUpdated'),
       });
 
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update visibility.',
+        title: t('common.error'),
+        description: error.message || t('common.failedToUpdate'),
         variant: 'destructive',
       });
     }
   };
 
-  const deleteMatch = async (match: MatchWithDetails) => {
-    if (!match.id) return;
-
-    // Confirmation dialog
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the match against ${match.opponent}?\n\n` +
-      `Date: ${format(toDate(match.match_date), 'PPP p')}\n` +
-      `This will also delete all associated lineups and events.\n` +
-      `This action cannot be undone.`
-    );
-
-    if (!confirmed) return;
+  const deleteMatch = async (matchId: string) => {
+    if (!window.confirm(t('common.confirmDelete'))) return;
 
     try {
       // Delete subcollections first (lineups and events)
       const [lineupsSnapshot, eventsSnapshot] = await Promise.all([
-        getDocs(collection(db, 'matches', match.id, 'lineups')),
-        getDocs(collection(db, 'matches', match.id, 'events'))
+        getDocs(collection(db, 'matches', matchId, 'lineups')),
+        getDocs(collection(db, 'matches', matchId, 'events'))
       ]);
 
       // Delete all lineups
@@ -251,147 +241,133 @@ export default function ManageMatches() {
       await Promise.all([...lineupDeletions, ...eventDeletions]);
 
       // Finally delete the match document
-      await deleteDoc(doc(db, 'matches', match.id));
+      await deleteDoc(doc(db, 'matches', matchId));
 
       toast({
-        title: 'Match Deleted',
-        description: `Match against ${match.opponent} and all associated data have been deleted successfully.`,
+        title: t('common.deleted'),
+        description: t('matches.matchDeleted'),
       });
 
       fetchData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete match.',
+        title: t('common.error'),
+        description: error.message || t('common.failedToDelete'),
         variant: 'destructive',
       });
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-primary/10">
-            <Trophy className="h-6 w-6 text-primary" />
+          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+            <Trophy className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">
-              Manage Matches
+            <h1 className="font-display text-3xl font-bold text-foreground">
+              {t('admin.manageMatches')}
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {matches.length} matches scheduled
+            <p className="text-muted-foreground">
+              {matches.length} {t('common.total')} {t('fixtures.title')}
             </p>
           </div>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Schedule Match
+            <Button className="gap-2 h-11 px-6 shadow-lg shadow-primary/20">
+              <Plus className="h-5 w-5" />
+              {t('matches.scheduleNewMatch')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0">
-            <DialogHeader className="p-6 pb-2">
-              <DialogTitle className="font-display">Schedule New Match</DialogTitle>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-display">{t('matches.scheduleNewMatch')}</DialogTitle>
               <DialogDescription>
-                Add a new match to the fixture list
+                {t('matches.enterMatchDetails')}
               </DialogDescription>
             </DialogHeader>
-
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pt-2 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="opponent">Opponent *</Label>
-                <Input
-                  id="opponent"
-                  value={opponent}
-                  onChange={(e) => setOpponent(e.target.value)}
-                  placeholder="Opponent team name"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="matchDate">Date *</Label>
+            <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="opponent">{t('matches.opponent')}</Label>
                   <Input
-                    id="matchDate"
-                    type="date"
-                    value={matchDate}
-                    onChange={(e) => setMatchDate(e.target.value)}
+                    id="opponent"
+                    value={opponent}
+                    onChange={(e) => setOpponent(e.target.value)}
+                    placeholder={t('matches.opponentPlaceholder')}
                     required
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="matchTime">Time *</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="matchDate">{t('matches.matchDate')}</Label>
+                    <Input
+                      id="matchDate"
+                      type="date"
+                      value={matchDate}
+                      onChange={(e) => setMatchDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="matchTime">{t('matches.matchTime')}</Label>
+                    <Input
+                      id="matchTime"
+                      type="time"
+                      value={matchTime}
+                      onChange={(e) => setMatchTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="stadium">{t('matches.stadium')}</Label>
                   <Input
-                    id="matchTime"
-                    type="time"
-                    value={matchTime}
-                    onChange={(e) => setMatchTime(e.target.value)}
+                    id="stadium"
+                    value={stadium}
+                    onChange={(e) => setStadium(e.target.value)}
+                    placeholder={t('matches.stadiumPlaceholder')}
                     required
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="stadium">Stadium</Label>
-                <Input
-                  id="stadium"
-                  value={stadium}
-                  onChange={(e) => setStadium(e.target.value)}
-                  placeholder="Match venue"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Competition</Label>
-                  <Select value={competitionId} onValueChange={setCompetitionId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover">
-                      {competitions.map((comp) => (
-                        <SelectItem key={comp.id} value={comp.id!}>
-                          {comp.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="kitColor">Match Kit Color</Label>
-                  <Input
-                    id="kitColor"
-                    value={kitColor}
-                    onChange={(e) => setKitColor(e.target.value)}
-                    placeholder="e.g., Red, Blue, White, Green"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="competition">{t('matches.competition')}</Label>
+                    <Select value={competitionId} onValueChange={setCompetitionId}>
+                      <SelectTrigger id="competition">
+                        <SelectValue placeholder={t('matches.selectCompetition')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {competitions.map((comp) => (
+                          <SelectItem key={comp.id} value={comp.id!}>
+                            {comp.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="kitColor">{t('matches.kitColor')}</Label>
+                    <Input
+                      id="kitColor"
+                      value={kitColor}
+                      onChange={(e) => setKitColor(e.target.value)}
+                      placeholder={t('matches.kitColorPlaceholder')}
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  {t('common.cancel')}
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Schedule Match
+                <Button type="submit" disabled={isSubmitting} className="min-w-[100px]">
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t('common.create')}
                 </Button>
               </div>
             </form>
@@ -399,115 +375,88 @@ export default function ManageMatches() {
         </Dialog>
       </div>
 
-      {/* Matches List */}
-      <div className="space-y-4">
-        {matches.map((match) => {
-          const isCompleted = match.status === 'completed';
-          const isWin = isCompleted && (match.goals_scored || 0) > (match.goals_conceded || 0);
-          const isDraw = isCompleted && match.goals_scored === match.goals_conceded;
-
-          return (
-            <Card key={match.id} className="match-card">
-              <div className="flex flex-col md:flex-row md:items-center gap-4 p-4">
-                <div className="flex-shrink-0 text-center md:text-left md:w-28">
-                  <p className="font-display font-bold text-foreground">
-                    {format(toDate(match.match_date), 'dd MMM')}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {format(toDate(match.match_date), 'HH:mm')}
-                  </p>
-                </div>
-
-                <div className="flex-1 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90">
-                      <img 
-                        src="/sanbitu-logo.svg" 
-                        alt="Sanbitu FC Logo" 
-                        className="h-8 w-8 object-contain"
-                      />
+      <div className="grid gap-4">
+        {matches.map((match) => (
+          <Card key={match.id} className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+            <CardContent className="p-0">
+              <div className="flex flex-col md:flex-row">
+                {/* Match Info */}
+                <div className="flex-1 p-6 flex flex-col justify-center border-r border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10">
+                      {match.competitions?.name || t('common.none')}
+                    </Badge>
+                    <Badge className={cn(
+                      match.status === 'upcoming' ? 'badge-upcoming' : 'badge-completed'
+                    )}>
+                      {match.status === 'upcoming' ? t('fixtures.upcoming') : t('fixtures.completed')}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="flex-1 text-right">
+                      <p className="font-display text-xl font-bold">Sanbitu FC</p>
                     </div>
-                    <div>
-                      <p className="font-display font-bold text-foreground">
-                        vs {match.opponent}
-                      </p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        {match.competitions && (
-                          <span>{match.competitions.name}</span>
-                        )}
-                        {match.competitions && match.kit_color && (
-                          <span>•</span>
-                        )}
-                        {match.kit_color && (
-                          <span className="flex items-center gap-1">
-                            <div 
-                              className="w-3 h-3 rounded-full border border-gray-300"
-                              style={{ backgroundColor: match.kit_color.toLowerCase() }}
-                            />
-                            {match.kit_color}
-                          </span>
-                        )}
-                      </div>
+                    <div className="px-4 py-2 rounded-lg bg-muted font-display text-2xl font-bold">
+                      {match.status === 'completed' ? (
+                        `${match.goals_scored} - ${match.goals_conceded}`
+                      ) : (
+                        'VS'
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-display text-xl font-bold">{match.opponent}</p>
                     </div>
                   </div>
-
-                  {isCompleted ? (
-                    <div
-                      className={cn(
-                        'px-4 py-2 rounded-lg font-display text-lg font-bold',
-                        isWin && 'bg-emerald-500/10 text-emerald-600',
-                        isDraw && 'bg-amber-500/10 text-amber-600',
-                        !isWin && !isDraw && 'bg-rose-500/10 text-rose-600'
-                      )}
-                    >
-                      {match.goals_scored} - {match.goals_conceded}
-                    </div>
-                  ) : (
-                    <Badge className="badge-upcoming">Upcoming</Badge>
-                  )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleVisibility(match)}
-                    title={match.is_visible !== false ? 'Hide from users' : 'Show to users'}
-                  >
-                    {match.is_visible !== false ? (
-                      <Eye className="h-4 w-4 text-emerald-600" />
-                    ) : (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteMatch(match)}
-                    title="Delete match"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                {/* Date & Venue */}
+                <div className="bg-muted/30 p-6 flex flex-col justify-center gap-3 md:w-64 border-r border-border/50">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    {format(toDate(match.match_date), 'MMM dd, yyyy')}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Trophy className="h-4 w-4" />
+                    {match.stadium}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="p-6 flex items-center justify-end gap-2 md:w-48">
                   <Link to={`/admin/match/${match.id}`}>
                     <Button variant="outline" size="sm" className="gap-2">
                       <Edit className="h-4 w-4" />
-                      Manage
+                      {t('common.manage')}
                     </Button>
                   </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleVisibility(match.id!, match.is_visible !== false)}
+                    className="text-muted-foreground"
+                    title={match.is_visible !== false ? t('matches.hideMatch') : t('matches.showMatch')}
+                  >
+                    {match.is_visible !== false ? <Eye className="h-4 w-4 text-emerald-600" /> : <EyeOff className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteMatch(match.id!)}
+                    className="text-muted-foreground hover:text-destructive"
+                    title={t('common.delete')}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            </Card>
-          );
-        })}
-
-        {matches.length === 0 && (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No matches scheduled yet</p>
             </CardContent>
           </Card>
+        ))}
+        {matches.length === 0 && (
+          <div className="text-center py-12 bg-card rounded-xl border border-dashed">
+            <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+            <p className="text-muted-foreground">{t('fixtures.noFixtures')}</p>
+          </div>
         )}
       </div>
     </div>

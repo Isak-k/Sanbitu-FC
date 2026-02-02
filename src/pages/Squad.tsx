@@ -19,22 +19,22 @@ export default function Squad() {
     { label: string; icon: React.ElementType; className: string }
   > = {
     goalkeeper: {
-      label: t('squad.goalkeeper') + 's',
+      label: t('squad.goalkeeper'),
       icon: Shield,
       className: 'position-gk',
     },
     defender: {
-      label: t('squad.defender') + 's',
+      label: t('squad.defender'),
       icon: Swords,
       className: 'position-def',
     },
     midfielder: {
-      label: t('squad.midfielder') + 's',
+      label: t('squad.midfielder'),
       icon: Crosshair,
       className: 'position-mid',
     },
     forward: {
-      label: t('squad.forward') + 's',
+      label: t('squad.forward'),
       icon: Goal,
       className: 'position-fwd',
     },
@@ -181,7 +181,7 @@ export default function Squad() {
                           variant="outline"
                           className={cn('mt-2', config.className)}
                         >
-                          {position.charAt(0).toUpperCase() + position.slice(1)}
+                          {t(`squad.${position}`)}
                         </Badge>
                       </div>
                     </CardContent>

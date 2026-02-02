@@ -45,10 +45,12 @@ import {
 import { toast } from '@/hooks/use-toast';
 import type { Player, PlayerPosition } from '@/lib/firestore-types';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const positions: PlayerPosition[] = ['goalkeeper', 'defender', 'midfielder', 'forward'];
 
 export default function ManagePlayers() {
+  const { t } = useTranslation();
   const { isAdmin, isLoading: authLoading } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,8 +143,8 @@ export default function ManagePlayers() {
       if (editingPlayer && editingPlayer.id) {
         await updateDoc(doc(db, 'players', editingPlayer.id), playerData);
         toast({
-          title: 'Player Updated',
-          description: `${fullName} has been updated successfully.`,
+          title: t('players.playerUpdated'),
+          description: t('players.playerUpdatedDesc', { name: fullName }),
         });
       } else {
         await addDoc(collection(db, 'players'), {
@@ -151,8 +153,8 @@ export default function ManagePlayers() {
           created_at: new Date().toISOString(),
         });
         toast({
-          title: 'Player Added',
-          description: `${fullName} has been added to the squad.`,
+          title: t('players.playerAdded'),
+          description: t('players.playerAddedDesc', { name: fullName }),
         });
       }
 
@@ -161,8 +163,8 @@ export default function ManagePlayers() {
       fetchPlayers();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to save player.',
+        title: t('common.error'),
+        description: error.message || t('players.failedToSave'),
         variant: 'destructive',
       });
     } finally {
@@ -179,17 +181,17 @@ export default function ManagePlayers() {
       });
 
       toast({
-        title: player.is_active ? 'Player Deactivated' : 'Player Activated',
-        description: `${player.full_name} has been ${
-          player.is_active ? 'deactivated' : 'activated'
-        }.`,
+        title: player.is_active ? t('players.playerDeactivated') : t('players.playerActivated'),
+        description: player.is_active 
+          ? t('players.playerDeactivatedDesc', { name: player.full_name })
+          : t('players.playerActivatedDesc', { name: player.full_name }),
       });
 
       fetchPlayers();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update player status.',
+        title: t('common.error'),
+        description: error.message || t('players.failedToUpdateStatus'),
         variant: 'destructive',
       });
     }
@@ -200,11 +202,11 @@ export default function ManagePlayers() {
 
     // Confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${player.full_name}?\n\n` +
-      `Jersey Number: #${player.jersey_number}\n` +
-      `Position: ${player.position}\n\n` +
-      `This will permanently remove the player from the system and all associated match data (lineups, events).\n` +
-      `This action cannot be undone.`
+      t('players.deleteConfirmation', {
+        name: player.full_name,
+        number: player.jersey_number,
+        position: t(`squad.${player.position}`)
+      })
     );
 
     if (!confirmed) return;
@@ -246,15 +248,15 @@ export default function ManagePlayers() {
       await deleteDoc(doc(db, 'players', player.id));
 
       toast({
-        title: 'Player Deleted',
-        description: `${player.full_name} and all associated match data have been permanently removed.`,
+        title: t('players.playerDeleted'),
+        description: t('players.playerDeletedDesc', { name: player.full_name }),
       });
 
       fetchPlayers();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete player.',
+        title: t('common.error'),
+        description: error.message || t('players.failedToDelete'),
         variant: 'destructive',
       });
     }
@@ -282,10 +284,10 @@ export default function ManagePlayers() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">
-              Manage Players
+              {t('admin.managePlayers')}
             </h1>
             <p className="text-muted-foreground text-sm">
-              {players.length} players registered
+              {players.length} {t('dashboard.players')} {t('common.total')}
             </p>
           </div>
         </div>
@@ -297,18 +299,18 @@ export default function ManagePlayers() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Add Player
+              {t('players.addNewPlayer')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0">
             <DialogHeader className="p-6 pb-2">
               <DialogTitle className="font-display">
-                {editingPlayer ? 'Edit Player' : 'Add New Player'}
+                {editingPlayer ? t('players.editPlayer') : t('players.addNewPlayer')}
               </DialogTitle>
               <DialogDescription>
                 {editingPlayer
-                  ? 'Update player information'
-                  : 'Add a new player to the squad'}
+                  ? t('players.enterDetails')
+                  : t('players.enterDetails')}
               </DialogDescription>
             </DialogHeader>
 
@@ -328,31 +330,31 @@ export default function ManagePlayers() {
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <p className="text-xs text-muted-foreground">Click to upload photo</p>
+                <p className="text-xs text-muted-foreground">{t('players.uploadAvatar')}</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label htmlFor="fullName">{t('players.fullName')} *</Label>
                 <Input
                   id="fullName"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Player's full name"
+                  placeholder={t('players.fullNamePlaceholder')}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="position">Position *</Label>
+                  <Label htmlFor="position">{t('players.position')} *</Label>
                   <Select value={position} onValueChange={(v) => setPosition(v as PlayerPosition)}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder={t('players.selectPosition')} />
                     </SelectTrigger>
                     <SelectContent className="bg-popover">
                       {positions.map((pos) => (
                         <SelectItem key={pos} value={pos}>
-                          {pos.charAt(0).toUpperCase() + pos.slice(1)}
+                          {t(`squad.${pos}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -360,7 +362,7 @@ export default function ManagePlayers() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="jerseyNumber">Jersey # *</Label>
+                  <Label htmlFor="jerseyNumber">{t('players.jerseyNumber')} *</Label>
                   <Input
                     id="jerseyNumber"
                     type="number"
@@ -375,13 +377,13 @@ export default function ManagePlayers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email (optional)</Label>
+                <Label htmlFor="email">{t('players.email')} ({t('common.optional')})</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="player@example.com"
+                  placeholder={t('players.emailPlaceholder')}
                 />
               </div>
 
@@ -394,11 +396,11 @@ export default function ManagePlayers() {
                     resetForm();
                   }}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {editingPlayer ? 'Save Changes' : 'Add Player'}
+                  {editingPlayer ? t('common.save') : t('common.create')}
                 </Button>
               </div>
             </form>
@@ -412,12 +414,12 @@ export default function ManagePlayers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-16">#</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-16">{t('players.jerseyNumber')}</TableHead>
+                <TableHead>{t('players.fullName')}</TableHead>
+                <TableHead>{t('players.position')}</TableHead>
+                <TableHead>{t('players.email')}</TableHead>
+                <TableHead>{t('players.status')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -441,7 +443,7 @@ export default function ManagePlayers() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="capitalize">
-                      {player.position}
+                      {t(`squad.${player.position}`)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
@@ -457,7 +459,7 @@ export default function ManagePlayers() {
                         'text-sm',
                         player.is_active ? 'text-emerald-600' : 'text-muted-foreground'
                       )}>
-                        {player.is_active ? 'Active' : 'Inactive'}
+                        {player.is_active ? t('common.active') : t('common.inactive')}
                       </span>
                     </div>
                   </TableCell>
@@ -467,7 +469,7 @@ export default function ManagePlayers() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditDialog(player)}
-                        title="Edit player"
+                        title={t('players.editPlayer')}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -475,7 +477,7 @@ export default function ManagePlayers() {
                         variant="ghost"
                         size="sm"
                         onClick={() => deletePlayer(player)}
-                        title="Delete player"
+                        title={t('common.delete')}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -487,7 +489,7 @@ export default function ManagePlayers() {
               {players.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                    No players registered yet
+                    {t('squad.noPlayers')}
                   </TableCell>
                 </TableRow>
               )}
