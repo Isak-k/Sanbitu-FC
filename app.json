@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Sanbitu FC",
+    "slug": "sanbitu-fc",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/sanbitu-logo.svg",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./public/sanbitu-logo.svg",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.sanbitufc.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./public/sanbitu-logo.svg",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./public/favicon.ico"
+    }
+  }
+}

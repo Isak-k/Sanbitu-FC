@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Static Test - Sanbitu FC</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        .success { color: #10b981; font-size: 24px; font-weight: bold; }
+        .info { color: #6b7280; margin: 20px 0; }
+        .button { background: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="success">✅ Deployment Working!</h1>
+        <p class="info">This static page proves your Vercel deployment is working correctly.</p>
+        <p class="info">The issue is likely with React Router configuration.</p>
+        <a href="/" class="button">Try Main App</a>
+        <hr style="margin: 30px 0;">
+        <h3>Debug Info:</h3>
+        <p><strong>URL:</strong> <span id="url"></span></p>
+        <p><strong>Time:</strong> <span id="time"></span></p>
+    </div>
+    
+    <script>
+        document.getElementById('url').textContent = window.location.href;
+        document.getElementById('time').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>

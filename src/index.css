@@ -1,0 +1,299 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sanbitu Football Club - Design System
+   Modern sports aesthetic with emerald green and gold accents
+*/
+
+@layer base {
+  :root {
+    /* Core brand colors - Emerald green pitch theme */
+    --background: 160 10% 98%;
+    --foreground: 160 30% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 30% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 30% 8%;
+
+    /* Primary - Emerald Green */
+    --primary: 160 84% 32%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Slate */
+    --secondary: 160 10% 94%;
+    --secondary-foreground: 160 30% 15%;
+
+    /* Muted tones */
+    --muted: 160 10% 92%;
+    --muted-foreground: 160 10% 40%;
+
+    /* Accent - Gold */
+    --accent: 43 96% 56%;
+    --accent-foreground: 43 100% 15%;
+
+    /* Status colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 160 84% 32%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 43 96% 56%;
+    --warning-foreground: 43 100% 15%;
+
+    /* UI elements */
+    --border: 160 20% 88%;
+    --input: 160 20% 88%;
+    --ring: 160 84% 32%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 160 30% 8%;
+    --sidebar-foreground: 160 10% 90%;
+    --sidebar-primary: 160 84% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 160 30% 15%;
+    --sidebar-accent-foreground: 160 10% 90%;
+    --sidebar-border: 160 30% 18%;
+    --sidebar-ring: 160 84% 45%;
+
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 32%) 0%, hsl(160, 84%, 25%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(160, 30%, 8%) 0%, hsl(160, 40%, 15%) 50%, hsl(160, 84%, 25%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(43, 96%, 56%) 0%, hsl(43, 96%, 45%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(160, 10%, 98%) 100%);
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(160, 30%, 8%, 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(160, 30%, 8%, 0.1), 0 2px 4px -2px hsl(160, 30%, 8%, 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(160, 30%, 8%, 0.1), 0 4px 6px -4px hsl(160, 30%, 8%, 0.1);
+    --shadow-glow: 0 0 20px hsl(160, 84%, 32%, 0.3);
+  }
+
+  .dark {
+    --background: 160 30% 6%;
+    --foreground: 160 10% 95%;
+
+    --card: 160 30% 10%;
+    --card-foreground: 160 10% 95%;
+
+    --popover: 160 30% 10%;
+    --popover-foreground: 160 10% 95%;
+
+    --primary: 160 84% 45%;
+    --primary-foreground: 160 30% 8%;
+
+    --secondary: 160 30% 15%;
+    --secondary-foreground: 160 10% 90%;
+
+    --muted: 160 30% 18%;
+    --muted-foreground: 160 10% 60%;
+
+    --accent: 43 96% 56%;
+    --accent-foreground: 43 100% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 160 30% 18%;
+    --input: 160 30% 18%;
+    --ring: 160 84% 45%;
+
+    --sidebar-background: 160 30% 4%;
+    --sidebar-foreground: 160 10% 90%;
+    --sidebar-primary: 160 84% 50%;
+    --sidebar-primary-foreground: 160 30% 8%;
+    --sidebar-accent: 160 30% 12%;
+    --sidebar-accent-foreground: 160 10% 90%;
+    --sidebar-border: 160 30% 15%;
+    --sidebar-ring: 160 84% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Hero section styles */
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .gold-gradient {
+    background: var(--gradient-gold);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-md border border-white/10;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  /* Stat card style */
+  .stat-card {
+    @apply bg-card rounded-xl p-6 shadow-sm border border-border transition-all duration-300 hover:shadow-md;
+  }
+
+  /* Player card style */
+  .player-card {
+    @apply relative overflow-hidden rounded-2xl bg-gradient-to-br from-card to-muted border border-border;
+  }
+
+  /* Match card style */
+  .match-card {
+    @apply bg-card rounded-xl p-4 border border-border shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  /* Badge styles */
+  .badge-live {
+    @apply bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-xs font-semibold animate-pulse;
+  }
+
+  .badge-upcoming {
+    @apply bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-completed {
+    @apply bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* Position badges */
+  .position-gk {
+    @apply bg-amber-500/20 text-amber-700 border border-amber-500/30;
+  }
+
+  .position-def {
+    @apply bg-blue-500/20 text-blue-700 border border-blue-500/30;
+  }
+
+  .position-mid {
+    @apply bg-emerald-500/20 text-emerald-700 border border-emerald-500/30;
+  }
+
+  .position-fwd {
+    @apply bg-rose-500/20 text-rose-700 border border-rose-500/30;
+  }
+
+  /* Animated underline for links */
+  .link-underline {
+    @apply relative inline-block;
+  }
+
+  .link-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary scale-x-0 origin-right transition-transform duration-300;
+  }
+
+  .link-underline:hover::after {
+    @apply scale-x-100 origin-left;
+  }
+}
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-emerald-400;
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-yellow-500;
+  }
+
+  /* Mobile-specific utilities */
+  .mobile-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .mobile-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-container {
+    @apply px-4 py-4 pb-20 pt-20;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-container {
+      @apply px-6 py-6 pb-6 pt-6;
+    }
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+
+  @keyframes scaleIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
+
+  /* Stagger children animation */
+  .stagger-children > * {
+    @apply animate-slide-up;
+  }
+
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+}
